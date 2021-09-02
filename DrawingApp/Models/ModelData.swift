@@ -350,7 +350,7 @@ extension ModelData: PKCanvasViewDelegate {
     func canvasViewDrawingDidChange(_ canvasView: PKCanvasView) {
         // self.updateCurrentLayer()
         self.fireChanges()
-        print("updated")
+        // print("updated")
     }
 }
 
@@ -364,7 +364,7 @@ extension ModelData {
         let expression = AWSS3TransferUtilityUploadExpression()
         expression.progressBlock = { (task, progress) in
             DispatchQueue.main.async (execute: {
-                print("Task in progress")
+                print("Task in progress: ", Float(progress.fractionCompleted))
             })
         }
         
@@ -404,7 +404,7 @@ extension ModelData {
         let expression = AWSS3TransferUtilityDownloadExpression()
         expression.progressBlock = {(task, progress) in DispatchQueue.main.async(execute: {
             // Do something e.g. Update a progress bar.
-            print("Download in progress")
+            print("Download in progress: ", Float(progress.fractionCompleted))
         })
         }
 

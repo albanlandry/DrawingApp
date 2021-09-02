@@ -30,7 +30,7 @@ struct LayeredCanvas: View {
                 
                 PaintingCanvas(imageData: $model.imageData, toolPicker: $model.toolPicker, isToolPickerVisible: true, canvas: $model.canvas)
                 */
-                
+
                 ForEach($model.document.DLayers) { layer in
                     if layer.wrappedValue.isVisible {
                         if layer.wrappedValue.id != model.selectedLayer.id {
@@ -38,8 +38,7 @@ struct LayeredCanvas: View {
                         }
                     }
                 }
-                
-                
+
                 ForEach($model.document.DLayers) { layer in
                     if layer.wrappedValue.isVisible {
                         if layer.wrappedValue.id == model.selectedLayer.id {
@@ -47,13 +46,12 @@ struct LayeredCanvas: View {
                         }
                     }
                 }
-                
+
                 /*
                 if $model.selectedLayer.wrappedValue.isVisible {
                     PaintingCanvas(imageData: $model.imageData, toolPicker: $model.toolPicker, canvas: $model.selectedLayer.canvas)
                 }
                  */
-                
 
                 /*
                 ForEach (0..<model.currentDocument().DLayers.count) { index in
@@ -74,7 +72,7 @@ struct LayeredCanvas: View {
                 // CCanvas()
                 // PaintingCanvas(imageData: $model.imageData, canvas: $model.canvas)
             }
-            .border(Color.black, width: 1)
+            // .border(Color.black, width: 1)
             // .shadow(color: .black, radius: 3)
        //  }// .background(Color.blue)
     }

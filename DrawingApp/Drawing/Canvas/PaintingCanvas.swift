@@ -64,10 +64,14 @@ private extension PaintingCanvas {
     func initBgImage() {
         if self.imageData != nil {
             let imageView = UIImageView(image: UIImage(data: self.imageData!))
+            canvas.frame = imageView.frame
+            canvas.contentSize = imageView.frame.size
+            canvas.isOpaque = false
             // canvas.drawing.bounds.width = imageView.bounds.width
             // canvas.drawing.bounds.size.height = imageView.bounds.height
-            
+            // self.canvas.addSubview(imageView)
             self.canvas.subviews[0].addSubview(imageView)
+            self.canvas.subviews[0].sendSubviewToBack(imageView)
         }
     }
     
