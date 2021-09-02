@@ -18,7 +18,7 @@ import zlib
 
 @main
 struct DrawingAppApp: App {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    // @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     let persistenceController = PersistenceController.shared
     @StateObject var modelData = ModelData()
@@ -28,6 +28,8 @@ struct DrawingAppApp: App {
     init() {
         // Initialize Kakao SDK.
         KakaoSDKCommon.initSDK(appKey: "468d7e5a837f342c18b3f2a6b63df60d")
+        print("It is initialized here")
+        initializeAWSS3()
     }
 
     var body: some Scene {
@@ -35,6 +37,7 @@ struct DrawingAppApp: App {
             ContentView()
                 .onAppear(perform: {
                     modelData.initNaverSDK()
+                    modelData.downloadData()
                 })
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
                 .environmentObject(modelData)
@@ -67,7 +70,9 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         let serviceConfigureation = AWSServiceConfiguration(region: .APNortheast2, credentialsProvider: credentialsProvider)
         let _ = AWSServiceManager.default().defaultServiceConfiguration = serviceConfigureation
         
-        let s3 = AWSS3.default()
+        /*
+         Listing files
+         let s3 = AWSS3.default()
         
         do {
             try s3.listObjectsV2(AWSS3ListObjectsV2Request(dictionary: ["bucket": "wedit-autocolor"], error: ())) {out, error in
@@ -85,7 +90,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         } catch {
             print("Error caught", error)
         }
-        
+        */
         // print("List buckets", s3.listBuckets(AWSRequest()))
         /*
         do {
@@ -110,12 +115,40 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         
         // upload()
         
-        downloadData()
+        // downloadData()
         
         print("didFinishLaunchingWithOptions")
         
         return true
     }
+}
+
+func initializeAWSS3() {
+    let credentialsProvider = MyCredentialsProvider()
+    let serviceConfigureation = AWSServiceConfiguration(region: .APNortheast2, credentialsProvider: credentialsProvider)
+    let _ = AWSServiceManager.default().defaultServiceConfiguration = serviceConfigureation
+    
+    /*
+     Listing files
+    let s3 = AWSS3.default()
+    
+    do {
+        try s3.listObjectsV2(AWSS3ListObjectsV2Request(dictionary: ["bucket": "wedit-autocolor"], error: ())) {out, error in
+            
+            if error != nil {
+                print("An error occurred listing the buckets content", error!)
+                return
+            }
+            
+            if out != nil {
+                print("Result", out!)
+            }
+        }
+        
+    } catch {
+        print("Error caught", error)
+    }
+    */
 }
 
 func upload() {

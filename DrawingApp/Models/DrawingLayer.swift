@@ -20,6 +20,7 @@ class DrawingLayer: Identifiable {
     var bgColor: Color = Color.white
     var bounds: CGRect?
     var preview: UIImage?
+    var imageData: Data?
     
     init() {
         canvas = PKCanvasView()

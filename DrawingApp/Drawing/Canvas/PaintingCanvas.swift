@@ -11,7 +11,7 @@ import PencilKit
 struct PaintingCanvas: UIViewRepresentable {
 
     // @State var imageData: Data = Data(count: 0)
-    @Binding var imageData: Data
+    @Binding var imageData: Data?
     @Binding var toolPicker: PKToolPicker
     @State var isToolPickerVisible: Bool = false
     // private let drawingHandler = CanvasDrawingDelegateHandler()
@@ -25,12 +25,10 @@ struct PaintingCanvas: UIViewRepresentable {
         // canvas.maximumZoomScale = 5.0
         // canvas.minimumZoomScale = 0.25
         print("canvasView")
-        
+        initBgImage()
         // if isToolPickerVisible {
-        showToolPicker()
+        // showToolPicker()
         // }
-        //
-        
         return canvas
     }
     
@@ -39,6 +37,8 @@ struct PaintingCanvas: UIViewRepresentable {
         
         // print("Strokes", canvas.drawing.strokes.count)
         // canvas.drawing = PKDrawing()
+        
+        initBgImage()
         /*
         if let image = UIImage(data: imageData) {
             let imageView = UIImageView(image: image)
@@ -57,17 +57,26 @@ struct PaintingCanvas: UIViewRepresentable {
             subView.sendSubviewToBack(imageView)
         }
         */
-        
     }
 }
 
 private extension PaintingCanvas {
+    func initBgImage() {
+        if self.imageData != nil {
+            let imageView = UIImageView(image: UIImage(data: self.imageData!))
+            // canvas.drawing.bounds.width = imageView.bounds.width
+            // canvas.drawing.bounds.size.height = imageView.bounds.height
+            
+            self.canvas.subviews[0].addSubview(imageView)
+        }
+    }
+    
     func showToolPicker() {
         toolPicker.setVisible(true, forFirstResponder: canvas)
         
         toolPicker.addObserver(canvas)
         
-        // canvas.becomeFirstResponder()
+        canvas.becomeFirstResponder()
     }
 }
 

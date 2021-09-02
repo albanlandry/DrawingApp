@@ -34,7 +34,7 @@ struct LayeredCanvas: View {
                 ForEach($model.document.DLayers) { layer in
                     if layer.wrappedValue.isVisible {
                         if layer.wrappedValue.id != model.selectedLayer.id {
-                            PaintingCanvas(imageData: $model.imageData, toolPicker: $model.toolPicker, canvas: layer.canvas)
+                            PaintingCanvas(imageData: layer.imageData, toolPicker: $model.toolPicker, canvas: layer.canvas)
                         }
                     }
                 }
@@ -43,7 +43,7 @@ struct LayeredCanvas: View {
                 ForEach($model.document.DLayers) { layer in
                     if layer.wrappedValue.isVisible {
                         if layer.wrappedValue.id == model.selectedLayer.id {
-                            PaintingCanvas(imageData: $model.imageData, toolPicker: $model.toolPicker, canvas: layer.canvas)
+                            PaintingCanvas(imageData: layer.imageData, toolPicker: $model.toolPicker, canvas: layer.canvas)
                         }
                     }
                 }

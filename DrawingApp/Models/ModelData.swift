@@ -12,6 +12,7 @@ import NaverThirdPartyLogin
 import PencilKit
 import SwiftUI
 import AWSCore
+import AWSS3
 
 final class ModelData: NSObject, ObservableObject {
     @Environment(\.undoManager) private var undoManager
@@ -65,14 +66,16 @@ final class ModelData: NSObject, ObservableObject {
         self.selectedLayer = addNewLayer(name: "Background")
         _ = addNewLayer(name: "Layer 1")
 
+        /*
         toolPicker.addObserver(canvas)
         canvas.becomeFirstResponder()
+         */
 
         initBgCanvas()
     }
 
     func fireChanges() {
-        showToolPicker()
+        // showToolPicker()
         self.canvasUpdated.toggle()
         print("firechanges")
     }
@@ -227,20 +230,19 @@ extension ModelData {
     
     func selectLayer(_ pos: Int) {
         selected = pos
-        
-        print("Current layer = \(pos)")
-        
+        //print("Current layer = \(pos)")
+        // showToolPicker()
         // fireChanges()
-        
     }
 
     func showToolPicker() {
+        /*
         toolPicker.setVisible(true, forFirstResponder: canvas)
         canvas.becomeFirstResponder()
-        /*
+        */
+        
         toolPicker.setVisible(true, forFirstResponder: selectedLayer.canvas)
         selectedLayer.canvas.becomeFirstResponder()
-        */
     }
 
     func toggleLayerVisibility(pos: Int) {
@@ -349,6 +351,110 @@ extension ModelData: PKCanvasViewDelegate {
         // self.updateCurrentLayer()
         self.fireChanges()
         print("updated")
+    }
+}
+
+///
+/// Functions related to AWS3 operations
+///
+extension ModelData {    
+    func upload() {
+        let data: Data = Data() // Data to be uploaded
+        
+        let expression = AWSS3TransferUtilityUploadExpression()
+        expression.progressBlock = { (task, progress) in
+            DispatchQueue.main.async (execute: {
+                print("Task in progress")
+            })
+        }
+        
+        var completionHandler: AWSS3TransferUtilityUploadCompletionHandlerBlock?
+        completionHandler = {(task, error) -> Void in
+            DispatchQueue.main.async {
+                print("Task Completed")
+            }
+        }
+        
+        let transferUtility = AWSS3TransferUtility.default()
+        
+        transferUtility.uploadData(data,
+                                   bucket: "wedit-autocolor",
+                                   key: "complete",
+                                   contentType: "text/plain",
+                                   expression: expression,
+                                   completionHandler: completionHandler).continueWith {
+            (task) -> AnyObject? in
+            
+            if let error = task.error {
+                print("Error: \(error.localizedDescription)")
+            }
+            
+            if let _ = task.result {
+                print("Do something with upload task")
+            }
+            
+            return nil
+        }
+    }
+
+    ///
+    /// Download a file from AWSS$ bucket
+    ///
+    func downloadData(key: String = "test_2.jpg") {
+        let expression = AWSS3TransferUtilityDownloadExpression()
+        expression.progressBlock = {(task, progress) in DispatchQueue.main.async(execute: {
+            // Do something e.g. Update a progress bar.
+            print("Download in progress")
+        })
+        }
+
+        /*
+        var completionHandler: AWSS3TransferUtilityDownloadCompletionHandlerBlock?
+        completionHandler = { (task, URL, data, error) -> Void in
+            DispatchQueue.main.async(execute: {
+                // Do something e.g. Alert a user for transfer completion.
+                // On failed downloads, `error` contains the error object.
+                print("The transfer is completed")
+            })
+        }
+        */
+
+        let transferUtility = AWSS3TransferUtility.default()
+        transferUtility.downloadData(
+            fromBucket: "wedit-autocolor",
+            key: "original/\(key)",
+            expression: expression // ,
+             // completionHandler: completionHandler
+        ) { (task, url, data, error) in
+            if error != nil {
+                print(error!)
+                return
+            }
+           
+            if data != nil{
+                // self.imageData = data!
+                DispatchQueue.main.async {
+                    self.selectedLayer.imageData = data
+                    self.fireChanges()
+                    print("Task Completed", data!)
+                }
+            }
+        }
+            /*
+            .continueWith {
+                (task) -> AnyObject? in if let error = task.error {
+                   print("Error: \(error.localizedDescription)")
+                }
+
+                if let _ = task.result {
+                  // Do something with downloadTask.
+                    print("Do something with downloadTask. Here is the task.")
+                    print("result", task.result?.status, task.result?.request)
+                    print("Data: ", task.result)
+                }
+                return nil;
+            }
+             */
     }
 }
 
