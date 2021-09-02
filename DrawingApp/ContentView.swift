@@ -6,6 +6,28 @@
 //
 
 import SwiftUI
+
+struct ContentView: View {
+    @EnvironmentObject var modelData: ModelData
+    
+    var body: some View {
+        /*
+        if(modelData.isLoggedIn) {
+            UserHomeView()
+                .animation(.default)
+        }else {
+            SignIn()
+                .environmentObject(modelData)
+        }*/
+        // LayeredCanvas()
+        CompositionDocument(shouldIUpdate: $modelData.canvasUpdated)
+            .environmentObject(modelData)
+        // UserHomeView()
+        // DrawingBitmapCanvas()
+    }
+}
+
+/*
 import CoreData
 
 struct ContentView: View {
@@ -65,16 +87,21 @@ struct ContentView: View {
         }
     }
 }
+*/
 
+/*
 private let itemFormatter: DateFormatter = {
     let formatter = DateFormatter()
     formatter.dateStyle = .short
     formatter.timeStyle = .medium
     return formatter
 }()
+*/
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+        ContentView()
+            .environmentObject(ModelData())
+            .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
     }
 }
