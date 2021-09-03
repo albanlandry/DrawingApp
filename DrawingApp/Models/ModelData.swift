@@ -175,6 +175,8 @@ extension ModelData {
 /// Handles editing related operations
 ///
 extension ModelData {
+
+    
     // updating the currently selected canvas
     func updateCurrentLayer() {
         // self.currentLayer().canvas.drawing = self.canvas.drawing

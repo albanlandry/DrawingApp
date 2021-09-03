@@ -57,7 +57,8 @@ struct ListLayerView: View {
             .listRowBackground(Color.clear)
             .background(Color.clear)
         }
-        .background(Color(.sRGB, red: 0.3, green: 0.3, blue: 0.3, opacity: 0.9))
+        // .background(Color(.sRGB, red: 0.3, green: 0.3, blue: 0.3, opacity: 0.9))
+        .background(Color.blue)
         .cornerRadius(10)
         .overlay(RoundedRectangle(cornerRadius: 10)
                     .stroke(Color.black, lineWidth: 1))

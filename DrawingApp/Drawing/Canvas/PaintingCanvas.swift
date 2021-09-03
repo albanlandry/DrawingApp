@@ -14,6 +14,7 @@ struct PaintingCanvas: UIViewRepresentable {
     @Binding var imageData: Data?
     @Binding var toolPicker: PKToolPicker
     @State var isToolPickerVisible: Bool = false
+    @State private var hasImage = false
     // private let drawingHandler = CanvasDrawingDelegateHandler()
     
     // To capture drawing for saving into albums
@@ -32,7 +33,7 @@ struct PaintingCanvas: UIViewRepresentable {
         return canvas
     }
     
-    func updateUIView(_ uiView: UIViewType, context: Context) {        
+    func updateUIView(_ uiView: UIViewType, context: Context) {
         initBgImage()
         /*
         if let image = UIImage(data: imageData) {
@@ -57,16 +58,23 @@ struct PaintingCanvas: UIViewRepresentable {
 
 private extension PaintingCanvas {
     func initBgImage() {
-        if self.imageData != nil {
+        if self.imageData != nil && self.canvas.subviews[0].subviews.count < 2 {
             let imageView = UIImageView(image: UIImage(data: self.imageData!))
             canvas.frame = imageView.frame
             canvas.contentSize = imageView.frame.size
             canvas.isOpaque = false
+            
+            canvas.contentInsetAdjustmentBehavior = .never
+            canvas.isScrollEnabled = false
+            
+            // print("Counter subviews: ", self.canvas.subviews[0].subviews.count)
+            
             // canvas.drawing.bounds.width = imageView.bounds.width
             // canvas.drawing.bounds.size.height = imageView.bounds.height
             // self.canvas.addSubview(imageView)
             self.canvas.subviews[0].addSubview(imageView)
             self.canvas.subviews[0].sendSubviewToBack(imageView)
+            hasImage = true
         }
     }
     
