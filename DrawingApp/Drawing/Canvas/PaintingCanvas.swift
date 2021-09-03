@@ -19,7 +19,7 @@ struct PaintingCanvas: UIViewRepresentable {
     // To capture drawing for saving into albums
     @Binding var canvas: PKCanvasView
     
-    func makeUIView(context: Context) -> some PKCanvasView {
+    func makeUIView(context: Context) -> some UIView {
         canvas.drawingPolicy = .anyInput
         canvas.backgroundColor = UIColor.clear
         // canvas.maximumZoomScale = 5.0
@@ -32,12 +32,7 @@ struct PaintingCanvas: UIViewRepresentable {
         return canvas
     }
     
-    func updateUIView(_ uiView: UIViewType, context: Context) {
-        // print("UPDATING UI>>>...", imageData, canvas)
-        
-        // print("Strokes", canvas.drawing.strokes.count)
-        // canvas.drawing = PKDrawing()
-        
+    func updateUIView(_ uiView: UIViewType, context: Context) {        
         initBgImage()
         /*
         if let image = UIImage(data: imageData) {

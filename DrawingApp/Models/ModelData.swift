@@ -358,7 +358,7 @@ extension ModelData: PKCanvasViewDelegate {
 /// Functions related to AWS3 operations
 ///
 extension ModelData {    
-    func upload() {
+    func upload(key: String?) {
         let data: Data = Data() // Data to be uploaded
         
         let expression = AWSS3TransferUtilityUploadExpression()
@@ -375,26 +375,27 @@ extension ModelData {
             }
         }
         
+        // Upload task
         let transferUtility = AWSS3TransferUtility.default()
-        
         transferUtility.uploadData(data,
                                    bucket: "wedit-autocolor",
                                    key: "complete",
-                                   contentType: "text/plain",
+                                   contentType: "img/jpg",
                                    expression: expression,
-                                   completionHandler: completionHandler).continueWith {
-            (task) -> AnyObject? in
+                                   completionHandler: completionHandler)
+            .continueWith {
+                (task) -> AnyObject? in
             
-            if let error = task.error {
-                print("Error: \(error.localizedDescription)")
+                if let error = task.error {
+                    print("Error: \(error.localizedDescription)")
+                }
+            
+                if let _ = task.result {
+                    print("Do something with upload task")
+                }
+            
+                return nil
             }
-            
-            if let _ = task.result {
-                print("Do something with upload task")
-            }
-            
-            return nil
-        }
     }
 
     ///

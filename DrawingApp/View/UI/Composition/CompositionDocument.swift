@@ -128,7 +128,7 @@ struct CompositionDocument: View {
                         let offsetX = maxWidth - (listWidth + paddingRight)
                         
                         ListLayerView(document: $model.document, documentDidUpdate: $model.canvasUpdated, selected: $model.selected)
-                            .background(Color.clear)
+                            // .background(Color.blue)
                             .environmentObject(model)
                             .transition(.offset())
                             .offset(x: offsetX, y: paddingtop)
