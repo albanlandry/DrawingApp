@@ -28,7 +28,6 @@ struct DrawingAppApp: App {
     init() {
         // Initialize Kakao SDK.
         KakaoSDKCommon.initSDK(appKey: "468d7e5a837f342c18b3f2a6b63df60d")
-        print("It is initialized here")
         initializeAWSS3()
     }
 
@@ -62,10 +61,6 @@ struct DrawingAppApp: App {
 
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-        // let access_key = "nWWEOZ3UWyHDYrlSrB3V"
-        // let secret_key = "Yh4gMu6OlkKO6qnk5OlmVEPNqiTfY5CZrTqfRiPW"
-        
-        // let credentialsProvider = AWSCognitoCredentialsProvider(regionType: .Unknown, identityPoolId: <#T##String#>)
         let credentialsProvider = MyCredentialsProvider()
         let serviceConfigureation = AWSServiceConfiguration(region: .APNortheast2, credentialsProvider: credentialsProvider)
         let _ = AWSServiceManager.default().defaultServiceConfiguration = serviceConfigureation

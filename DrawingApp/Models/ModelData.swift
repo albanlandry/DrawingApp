@@ -438,6 +438,7 @@ extension ModelData {
                 // self.imageData = data!
                 DispatchQueue.main.async {
                     self.selectedLayer.imageData = data
+                    self.imageData = data ?? Data(count: 0)
                     self.fireChanges()
                     print("Task Completed", data!)
                 }

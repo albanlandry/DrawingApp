@@ -14,29 +14,18 @@ struct CompositionDocument: View {
     @State private var scale: CGFloat = 1.0
     @State private var offset = CGSize()
     @State private var translation: CGSize = .zero
+    @State private var shouldDrag = false
+    @State private var canDrag = false
     
-    @State var dimensions: CGSize = CGSize(width: 500, height: 600)
+    @State var dimensions: CGSize = CGSize(width: 900, height: 600)
     
     @EnvironmentObject var model: ModelData
     @Binding var shouldIUpdate: Bool
-    
-    // Animation transition
-    
-    /*
-    let layerBtn = AnyView(Button(action: {
-        self.showLayerList.toggle()
-    } ) {
-        Image(systemName: "square.stack.3d.up.fill")
-            .font(.system(size: 26))
-            .accessibilityLabel("Clear")
-    })
-    */
     
     var body: some View {
         GeometryReader { frame in
             let paddingtop = 60.0
             let paddingRight = 10.0
-            // let toolbarPadding = 20.0
             let toolbarBtnPadding = 30.0
             let maxWidth =  frame.size.width
             let maxHeight = frame.size.height
@@ -44,61 +33,67 @@ struct CompositionDocument: View {
             let docHeight = dimensions.height > 0 ? dimensions.height : maxHeight
             let docFrame = Display.fitToView(width: docWidth, height: docHeight, destWidth: maxWidth, destHeight: maxHeight - paddingtop)
             
-            // docFrame.size
-
-            
-            
             ZStack(alignment: .topLeading) {
-                // VStack {
-                //    Spacer()
-                    
-                    // Divider()
-
                 ZStack {
-                    
                     LayeredCanvas()
                         .gesture(MagnificationGesture()
                                     .onChanged { val in
                             _ = val / self.lastScale
-                            self.lastScale = val
-                            self.scale = val * self.scale
+
+                            adjustScale(val: val)
                             
-                            if self.scale >= 8.0 {
-                                self.scale = 8 .0
-                            }
-                            
-                            if self.scale < 0.25 {
-                                self.scale = 0.25
-                            }
                         }.onEnded{ val in
                             self.lastScale = 1.0
                         }
+                                    .simultaneously(with: shouldDrag ? DragGesture()
+                                            .onChanged { val in
+                            self.translation = val.translation
+                            
+                            if self.scale > 1.0 {
+                                self.offset.width += self.translation.width
+                                self.offset.height += self.translation.height
+                                self.translation = .zero
+                            }
+                            
+                        }.onEnded{ val in
+                            self.translation = .zero
+                            
+                        } : nil)
                         )
-                        // .background(Color.gray)
                         .frame(width: docFrame.size.width, height: docFrame.size.height, alignment: .leading)
                         .scaleEffect(scale)
                         .offset(x: docFrame.origin.x + self.offset.width, y: docFrame.origin.y + self.offset.height + paddingRight)
                     .environmentObject(model)
                 }
-                .offset(x: 0, y: paddingtop)
-            
-                HStack {
+                .onReceive(model.$imageData) { value in
+                    let image = UIImage(data: value)
                     
-                    Spacer()
-                    /*
-                    Button(action: {
-                        // self.showLayerList.toggle()
-                        // model.pickColorAt(10, 10)
-                    } ) {
-                        Image(systemName: "pencil")
-                            .font(.system(size: 26))
-                            .accessibilityLabel("Pencil")
+                    withAnimation {
+                        dimensions = image?.size ?? dimensions
                     }
-                    */
+                    
+                    print("imageUpdated", dimensions)
+                    
+                }
+                .offset(x: 0, y: paddingtop)
+                
+                /// Toolbar
+                HStack {
+                    Spacer()
+                  
+                    if canDrag == true {
+                        Button(action: {
+                            shouldDrag.toggle()
+                        } ) {
+                            Image(systemName: shouldDrag ? "hand.raised.fill" : "hand.raised.slash")
+                                .font(.system(size: 26))
+                                .accessibilityLabel("Drag")
+                        }
+                    }
                     
                     Button(action: {
-                        // self.showLayerList.toggle()
                         model.showToolPicker()
+                        shouldDrag = false
                     } ) {
                         Image(systemName: "paintbrush.pointed.fill")
                             .font(.system(size: 26))
@@ -115,37 +110,55 @@ struct CompositionDocument: View {
                     
                 }
                 .padding()
-                // .frame(width: maxWidth, height: paddingtop, alignment: .trailing)
                 .background(Color.blue)
                 .foregroundColor(Color.white)
-                // .offset(x: 0, y: -maxHeight/2 + paddingtop)
-                
-                
-                // .frame(maxWidth: .infinity, maxHeight: paddingtop, alignment: .trailing)
-                // .frame(width: .zero, height: paddingtop, alignment: .trailing)
-                
-                // }
                 
                 if showLayerList {
-                    // GeometryReader { listSize in
-                        let listWidth = maxWidth * 2 / 6
-                        let offsetX = maxWidth - (listWidth + paddingRight)
-                        
-                        ListLayerView(document: $model.document, documentDidUpdate: $model.canvasUpdated, selected: $model.selected)
-                            // .background(Color.blue)
-                            .environmentObject(model)
-                            .transition(.offset())
-                            //.scaledToFit()
-                        .frame(maxWidth: listWidth, maxHeight: maxHeight * 3 / 5)
+                    let listWidth = maxWidth * 2 / 6
+                    let offsetX = maxWidth - (listWidth + paddingRight)
+                    
+                    ListLayerView(document: $model.document, documentDidUpdate: $model.canvasUpdated, selected: $model.selected)
+                    .background(Color.blue)
+                    .cornerRadius(10)
+                    .overlay(RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.blue, lineWidth: 0.5))
+                    .environmentObject(model)
+                    .transition(.offset())
+                    .frame(maxWidth: listWidth, maxHeight: maxHeight * 3 / 5)
                     .offset(x: offsetX, y: paddingtop + paddingRight)
-                
-                    // }
                 }
             }
         }
-
     }
-
+    
+    ///
+    /// Adjust the scale of the image
+    ///
+    func adjustScale(val: CGFloat) {
+        self.lastScale = val
+        self.scale = val * self.scale
+        
+        if self.scale >= 8.0 {
+            self.scale = 8.0
+        }
+        
+        if self.scale < 0.25 {
+            self.scale = 0.25
+        }
+        
+        if self.scale > 1.0 {
+            canDrag = true
+        }else {
+            canDrag = false
+            shouldDrag = false
+            
+            withAnimation {
+                self.offset.width = 0
+                self.offset.height = 0
+            }
+            
+        }
+    }
 }
 
 /*

@@ -9,6 +9,10 @@ import PencilKit
 import UIKit
 import SwiftUI
 
+class Layer: Identifiable {
+    
+}
+
 class DrawingLayer: Identifiable {
     var id = UUID()
     var name: String = ""
