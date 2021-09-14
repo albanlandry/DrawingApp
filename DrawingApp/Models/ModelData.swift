@@ -14,24 +14,102 @@ import SwiftUI
 import AWSCore
 import AWSS3
 
-final class ModelData: NSObject, ObservableObject {
+class ModelData: NSObject, ObservableObject {
     @Environment(\.undoManager) private var undoManager
+    
+    // User data
+    private var username: String = ""
+    private var password: String = ""
+    
+    private var currentUserOriginalFolderKey:String  {
+        get{
+            return "original/\(username.lowercased())/"
+        }
+    }
+    
+    private var currentUserCompleteFolderKey:String  {
+        get {
+            return "complete/\(username.lowercased())/"
+        }
+    }
+    
+    private var currentUserCorruptedFolderKey:String  {
+        get {
+            return "corrupted/\(username.lowercased())/"
+        }
+    }
     
     @Published var isLoggedIn = false
     @Published var compositions: [Composition] = []
+    @Published var showDocument: Bool = true
     @Published var currentComposition = 0 {
         didSet {
             document = currentDocument()
-            selectedLayer = currentLayer()
+            // selectedLayer = currentLayer()
             fireChanges()
         }
     }
+    
+    private var listKeys = RangedArray<String?>(data: [])
 
     @Published var document: Composition = Composition()
 
     // Editing related variables
     @Published var showImagePicker = false
     @Published var imageData: Data = Data(count: 0)
+    @Published var currentImageIndex = 0
+    
+    ///
+    /// Store the indexes of the images already in used in documents
+    ///
+    private var imagesInDocuments: [Int] = [] // Holds the indices of the images with existing documents
+    
+    func addImagesInDocumentIndex(_ index: Int) {
+        self.imagesInDocuments.append(index)
+    }
+    
+    func removeImagesInDocumentIndex(_ index: Int) {
+        let pos = imagesInDocuments.firstIndex(of: index)
+        
+        if pos != nil {
+            self.imagesInDocuments.remove(at: pos!)
+            self.removeDocument(pos!)
+        }
+    }
+    
+    ///
+    func setCurrentImage (title: String) {
+        currentImageIndex = imageRepos.firstIndex{
+            $0.key == title
+        } ?? 0
+        
+        // self.addImagesInDocumentIndex(currentImageIndex)
+        self.setCurrentImage (index: currentImageIndex)
+        // imageData = imageRepos[currentImageIndex].data
+        // self.selectedLayer.imageData = imageRepos[currentImageIndex].data
+    }
+    
+    func setCurrentImage (index: Int) {
+        // Create a new document if the current image index does not exist in the indexes database
+        // otherwise we retrieve the position of the index in the indexes database, which is the position of the document where the image is opened
+        // Then we select the corresponding document at the computed position
+        currentImageIndex = index
+        
+        if !imagesInDocuments.contains(index) {
+            createNewDocument()
+            self.addImagesInDocumentIndex(currentImageIndex)
+        } else {
+            let pos = imagesInDocuments.firstIndex(of: index)!
+            selectDocument(pos: pos)
+        }
+
+        imageData = imageRepos[currentImageIndex].data
+        self.selectedLayer.imageData = imageRepos[currentImageIndex].data
+    }
+    
+    @Published var imageRepos = [OnlineImage]()
+    @Published var isFetchingImage: Bool = false
+    private var reposSubscription = Set<AnyCancellable>()
 
     // Painting models
     @Published var layers: [DrawingLayer] = []
@@ -61,17 +139,17 @@ final class ModelData: NSObject, ObservableObject {
     override init() {
         super.init()
 
-        compositions.append(document)
+        // compositions.append(document)
 
-        self.selectedLayer = addNewLayer(name: "Background")
-        _ = addNewLayer(name: "Layer 1")
+        // self.selectedLayer = addNewLayer(name: "Background")
+        // _ = addNewLayer(name: "Layer 1")
 
         /*
         toolPicker.addObserver(canvas)
         canvas.becomeFirstResponder()
          */
 
-        initBgCanvas()
+        // initBgCanvas()
     }
 
     func fireChanges() {
@@ -163,15 +241,6 @@ extension ModelData {
 }
 
 ///
-/// Tools related extensions
-///
-extension ModelData {
-    func pickColorAt(_ x: Int, _ y: Int) {
-        canvas.getColorAt(x: x, y: y)
-    }
-}
-
-///
 /// Handles editing related operations
 ///
 extension ModelData {
@@ -181,9 +250,7 @@ extension ModelData {
     func updateCurrentLayer() {
         // self.currentLayer().canvas.drawing = self.canvas.drawing
         self.selectedLayer.canvas.drawing.append(self.canvas.drawing)
-        //self.selectedLayer.canvas.drawing.append(self.canvas.drawing)
         // print("Current layer")
-        // self.selectedLayer.canvas.drawing = canvas.drawing
         // canvas = PKCanvasView()
         // initBgCanvas()
         
@@ -210,14 +277,68 @@ extension ModelData {
         return layer
     }
     
+    ///
+    /// Adding new document witthout any layer
+    ///
+    func addNewDocument() {
+        compositions.append(Composition())
+        self.document = compositions.last!
+        self.currentComposition = compositions.count - 1
+    }
+    
+    ///
+    ///
+    ///
+    func createNewDocument() {
+        print("Creating a new document")
+        
+        compositions.append(Composition())
+        self.document = compositions.last!
+        self.currentComposition = compositions.count - 1
+        
+        self.selectedLayer = addNewLayer(name: "Background")
+        
+        self.currentComposition = compositions.count - 1
+        self.selected = 0
+        
+        // print(currentComposition)
+    }
+    
+    ///
+    ///
+    ///
     func currentDocument() -> Composition {
         return compositions[currentComposition]
     }
     
+    ///
+    ///
+    ///
+    func removeDocument(_ pos: Int) {
+        compositions.remove(at: pos)
+        
+        if compositions.count > 0 {
+            selectDocument(pos:  (compositions.count > pos ) ? pos: pos - 1)
+        }
+    }
+    
+    ///
+    ///
+    ///
+    func selectDocument(pos: Int) {
+        self.currentComposition = pos
+    }
+    
+    ///
+    ///
+    ///
     func currentLayer() -> DrawingLayer {
         return compositions[currentComposition].DLayers[selected]
     }
     
+    ///
+    ///
+    ///
     func cancelImageEditing() {
         imageData = Data(count: 0)
         // showImagePicker.toggle()
@@ -230,6 +351,9 @@ extension ModelData {
         self.layers.insert(layer, at: pos)
     }
     
+    ///
+    ///
+    ///
     func selectLayer(_ pos: Int) {
         selected = pos
         //print("Current layer = \(pos)")
@@ -310,7 +434,53 @@ extension ModelData {
             }
         }        
     }
+    
+    ///
+    /// Classifies the document as corrupted
+    ///
+    func corruptedDocument() {
+        let doc = self.currentDocument()
+        
+        guard let data = doc.DLayers[0].flatten()?.pngData() else {return}
+        
+        self.upload(key: String(imageRepos[currentImageIndex].key.components(separatedBy: "/").last ?? ""), data: data, isCorrupted: true) {
+            print("deletion of objects")
+            self.deleteObject(key: self.imageRepos[self.currentImageIndex].key)
+        }
+    }
+    
+    ///
+    ///
+    ///
+    func saveCurrentDocument() {
+        let doc = self.currentDocument()
+        
+        guard let data = doc.DLayers[0].flatten()?.pngData() else {return}
+        
+        self.upload(key: String(imageRepos[currentImageIndex].key.components(separatedBy: "/").last ?? ""), data: data) {
+            print("deletion of objects")
+            self.deleteObject(key: self.imageRepos[self.currentImageIndex].key)
+        }
+    }
+    
+    ///
+    /// Remove the data of the current image from the list images and closes the document using the image if any
+    ///
+    func updateImageRepository() {
+        // Get the position of the index of the current image in the list of indexes
+        // This position corresponds to the position of the document in which the image is opened
+        // let pos = imagesInDocuments.firstIndex(of: currentImageIndex)
+        imageRepos.remove(at: currentImageIndex) // Removes the image from the list of data
+        self.removeImagesInDocumentIndex(currentImageIndex) // Remove the index of the image stored in the list of indexes of images already opened in a document
+
+        if imageRepos.count > 0 {
+            setCurrentImage(index: (imageRepos.count > currentImageIndex) ? currentImageIndex : currentImageIndex - 1)
+        }else {   
+            self.showDocument = false
+        }
+    }
 }
+
 
 ///
 /// Naver authentication functionalities
@@ -359,9 +529,11 @@ extension ModelData: PKCanvasViewDelegate {
 ///
 /// Functions related to AWS3 operations
 ///
-extension ModelData {    
-    func upload(key: String?) {
-        let data: Data = Data() // Data to be uploaded
+extension ModelData {
+    ///
+    ///
+    ///
+    func upload(key: String = "", data: Data = Data(), isCorrupted:Bool =  false, completed: @escaping () -> Void) {
         
         let expression = AWSS3TransferUtilityUploadExpression()
         expression.progressBlock = { (task, progress) in
@@ -377,11 +549,17 @@ extension ModelData {
             }
         }
         
+        var uploadKey = self.isLoggedIn ? "\(self.currentUserCompleteFolderKey)\(key)" : "complete/\(key)"
+        
+        if isCorrupted {
+            uploadKey = self.isLoggedIn ? "\(self.currentUserCorruptedFolderKey)\(key)" : "corrupted/\(key)"
+        }
+        
         // Upload task
         let transferUtility = AWSS3TransferUtility.default()
         transferUtility.uploadData(data,
                                    bucket: "wedit-autocolor",
-                                   key: "complete",
+                                   key: uploadKey,
                                    contentType: "img/jpg",
                                    expression: expression,
                                    completionHandler: completionHandler)
@@ -394,6 +572,7 @@ extension ModelData {
             
                 if let _ = task.result {
                     print("Do something with upload task")
+                    completed()
                 }
             
                 return nil
@@ -401,31 +580,73 @@ extension ModelData {
     }
 
     ///
+    ///
+    ///
+    func checkUser(username: String, pwd: String) {
+        let s3 = AWSS3.default()
+        self.username = username
+        self.password = pwd
+        
+        do {
+            try s3.listObjectsV2(AWSS3ListObjectsV2Request(dictionary: [
+                "bucket": "wedit-autocolor",
+                "prefix": self.currentUserOriginalFolderKey,
+                "delimiter": "/"
+            ], error: ())) {out, error in
+                
+                if error != nil {
+                    print("An error occurred listing the buckets content", error!)
+                    return
+                }
+                
+                if out != nil {
+                    // print("Result", out!)
+                    
+                    guard let contents = out?.contents else {return}
+                    
+                    if contents.count > 0 && self.password == "\(self.username)12345" {
+                        DispatchQueue.main.async {
+                            self.isLoggedIn = true
+                        }
+                    }
+                    
+                    /*
+                    let originals = contents[1..<contents.count].map {
+                        $0.key
+                    }.filter{
+                        $0?.contains("original") ?? false
+                    }
+                    
+                    originals.forEach { key in
+                        self.downloadData(key: key!)
+                    }
+                    
+                    self.listKeys = RangedArray(data: originals)
+                    */
+
+                    print("Result list: ", contents)
+                }
+            }
+        } catch {
+            print("Error caught", error)
+        }
+    }
+    
+    ///
     /// Download a file from AWSS$ bucket
     ///
-    func downloadData(key: String = "test_2.jpg") {
+    func downloadData(key: String = "hdri.jpg") {
         let expression = AWSS3TransferUtilityDownloadExpression()
         expression.progressBlock = {(task, progress) in DispatchQueue.main.async(execute: {
             // Do something e.g. Update a progress bar.
-            print("Download in progress: ", Float(progress.fractionCompleted))
+            // print("Download in progress: ", Float(progress.fractionCompleted))
         })
         }
-
-        /*
-        var completionHandler: AWSS3TransferUtilityDownloadCompletionHandlerBlock?
-        completionHandler = { (task, URL, data, error) -> Void in
-            DispatchQueue.main.async(execute: {
-                // Do something e.g. Alert a user for transfer completion.
-                // On failed downloads, `error` contains the error object.
-                print("The transfer is completed")
-            })
-        }
-        */
 
         let transferUtility = AWSS3TransferUtility.default()
         transferUtility.downloadData(
             fromBucket: "wedit-autocolor",
-            key: "original/\(key)",
+            key: "\(key)",
             expression: expression // ,
              // completionHandler: completionHandler
         ) { (task, url, data, error) in
@@ -437,28 +658,106 @@ extension ModelData {
             if data != nil{
                 // self.imageData = data!
                 DispatchQueue.main.async {
-                    self.selectedLayer.imageData = data
-                    self.imageData = data ?? Data(count: 0)
+                    // self.selectedLayer.imageData = data
+                    self.imageRepos.append(OnlineImage(key: key, data: data!))
+                    // self.imageData = data ?? Data(count: 0)
                     self.fireChanges()
                     print("Task Completed", data!)
                 }
             }
         }
-            /*
-            .continueWith {
-                (task) -> AnyObject? in if let error = task.error {
-                   print("Error: \(error.localizedDescription)")
+    }
+    
+    ///
+    ///
+    ///
+    func deleteObject(key: String = "original/film_03.jpg") {
+        let s3 = AWSS3.default()
+        
+        do {
+            try s3.deleteObject(AWSS3DeleteObjectRequest(dictionary:
+                [
+                    "bucket": "wedit-autocolor",
+                    "key": key,
+                    //"delimiter": "/"
+                ], error: ())) {res, error  in
+                
+                if error == nil {
+                    print("Delete result: ", res)
+                    
+                    DispatchQueue.main.async {
+                        self.updateImageRepository()
+                    }
                 }
-
-                if let _ = task.result {
-                  // Do something with downloadTask.
-                    print("Do something with downloadTask. Here is the task.")
-                    print("result", task.result?.status, task.result?.request)
-                    print("Data: ", task.result)
-                }
-                return nil;
+                
             }
-             */
+        } catch {
+            print("Error caught", error)
+        }
+        
+    }
+    
+    ///
+    /// List 
+    ///
+    func listOriginals(fromCurrentUser: Bool = false) {
+        /*
+        let ar = RangedArray<Int>(data: [Int](0...29))
+        ar.next()
+            .next()
+            .result { res in
+                _ = res.map {
+                    print("RES => ", $0)
+                }
+            }
+            .prev(5)
+            .prev()
+            .prev()
+            .result { res in
+                _ = res.map {
+                    print("RES => ", $0)
+                }
+            }
+        */
+
+        /// Listing files
+        let s3 = AWSS3.default()
+        
+        do {
+            try s3.listObjectsV2(AWSS3ListObjectsV2Request(dictionary: [
+                "bucket": "wedit-autocolor",
+                "prefix": fromCurrentUser ? self.currentUserOriginalFolderKey: "original/",
+                "delimiter": "/"
+            ], error: ())) {out, error in
+                
+                if error != nil {
+                    print("An error occurred listing the buckets content", error!)
+                    return
+                }
+                
+                if out != nil {
+                    // print("Result", out!)
+                    
+                    guard let contents = out?.contents else {return}
+                    
+                    let originals = contents[1..<contents.count].map {
+                        $0.key
+                    }.filter{
+                        $0?.contains("original") ?? false
+                    }
+                    
+                    originals.forEach { key in
+                        self.downloadData(key: key!)
+                    }
+                    
+                    self.listKeys = RangedArray(data: originals)
+
+                    print("Result list: ", originals)
+                }
+            }
+        } catch {
+            print("Error caught", error)
+        }
     }
 }
 

@@ -16,11 +16,11 @@ target 'DrawingApp' do
   pod 'AWSS3'
   pod 'AWSMobileClient'
   pod 'AWSPinpoint'
-  pod 'Amplify'
-  pod 'AmplifyPlugins/AWSS3StoragePlugin'
-  pod 'AmplifyPlugins/AWSCognitoAuthPlugin'
+  # pod 'Amplify'
+  # pod 'AmplifyPlugins/AWSS3StoragePlugin'
+  # pod 'AmplifyPlugins/AWSCognitoAuthPlugin'
   # pod 'AmplifyPlugins/AWSAPIPlugin'
-  pod 'Amplify/Tools', '~> 1.0'
+  # pod 'Amplify/Tools', '~> 1.0'
 
   # Pods for DrawingApp
 

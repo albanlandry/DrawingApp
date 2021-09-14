@@ -9,10 +9,6 @@ import PencilKit
 import UIKit
 import SwiftUI
 
-class Layer: Identifiable {
-    
-}
-
 class DrawingLayer: Identifiable {
     var id = UUID()
     var name: String = ""
@@ -55,15 +51,44 @@ class DrawingLayer: Identifiable {
     }
     
     func previewImage() -> Image {
+        /*
         let drawing = canvas.drawing
         let bounds = drawing.bounds
 
         // Retrieve the data image
         let img = drawing.image(from: bounds, scale: 1.0)
         preview = UIImage(cgImage: img.cgImage!)
+        */
         
-        return Image(uiImage: preview!)
+        return Image(uiImage: self.flatten()!)
     }
+    
+    func flatten() -> UIImage? {
+        // let drawing = canvas.drawing
+        // let bounds = drawing.bounds
+
+        UIGraphicsBeginImageContextWithOptions(canvas.bounds.size, false, 1)
+        
+        // guard let context = UIGraphicsGetCurrentContext() else {return UIImage()}
+        
+        UIImage(data: imageData!)?.draw(in: canvas.bounds)
+        
+        canvas.drawHierarchy(in: CGRect(origin: .zero, size: canvas.bounds.size), afterScreenUpdates: false)
+        
+        // Getting image
+        let generatedIamge = UIGraphicsGetImageFromCurrentImageContext()
+
+        // Ending render
+        UIGraphicsEndImageContext()
+        
+        
+        // Retrieve the data image
+        // let img = drawing.image(from: bounds, scale: 1.0)
+        // preview = UIImage(cgImage: img.cgImage!)
+        
+        return generatedIamge
+    }
+    
 }
 
 struct DrawingLayerPreview: UIViewRepresentable {

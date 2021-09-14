@@ -21,6 +21,7 @@ struct ListLayerView: View {
                     .foregroundColor(Color.white)
                     .fontWeight(.bold)
                 Spacer()
+                /*
                 Button(action: {
                     model.addNewLayer(name: "Layer \(model.currentDocument().DLayers.count)")
                 },
@@ -29,6 +30,7 @@ struct ListLayerView: View {
                         .font(.system(size: 24))
                         .foregroundColor(Color.white)
                 })
+                */
             }.padding([.trailing, .top, .leading])
             
             Divider()

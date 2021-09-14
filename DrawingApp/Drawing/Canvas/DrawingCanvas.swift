@@ -173,6 +173,7 @@ extension PathBasedCanvas {
 
 
 // Struct directly dealing with the canvas view to draw element
+/*
 struct CCanvas: UIViewRepresentable {
     
     var pathedCanvas = PathBasedCanvas()
@@ -190,6 +191,7 @@ struct CCanvas: UIViewRepresentable {
         
     }
 }
+*/
 
 struct DrawingBitmapCanvas: UIViewRepresentable {
     func makeUIView(context: Context) -> some BitmapCanvas {

@@ -57,15 +57,17 @@ struct SignIn: View {
                         .font(.caption)
                         .padding([.top, .bottom], 20)
                         
-                        NavigationLink (destination: UserHomeView()) {
+                        // NavigationLink (destination: UserHomeView()) {
+                            /*
                             Text("로그인")
                                 .frame(maxWidth: .infinity)
                                 .padding(.all, 15)
                                 .background(Color.black)
                                 .foregroundColor(Color.white)
                                 .clipShape(RoundedRectangle(cornerRadius: 5))
-                            /*
+                            */
                             Button(action: {
+                                modelData.checkUser(username: self.username, pwd: self.pwd)
                             },
                                    label: {
                                         Text("로그인")
@@ -76,8 +78,7 @@ struct SignIn: View {
                                     .clipShape(RoundedRectangle(cornerRadius: 5))
                                 }
                             )
-                             */
-                        }
+                        // }
 
                         
                         // Horizontal diver
@@ -85,7 +86,7 @@ struct SignIn: View {
                         Divider()
                             .padding(.vertical, 25)
                             
-                        
+                        /*
                         Text("SNS계정으로 간편 로그인/회원가입")
                             .padding(.bottom, 25)
                             .font(Font.system(.callout))
@@ -106,6 +107,7 @@ struct SignIn: View {
                             .frame(maxWidth: .infinity)
                             .padding(.top, 20)
                             .font(Font.system(.caption))
+                        */
 
                     }.frame(maxWidth: 500)
                 }

@@ -22,6 +22,8 @@ struct CompositionDocument: View {
     @EnvironmentObject var model: ModelData
     @Binding var shouldIUpdate: Bool
     
+    var m_title = ""
+    
     var body: some View {
         GeometryReader { frame in
             let paddingtop = 60.0
@@ -33,99 +35,134 @@ struct CompositionDocument: View {
             let docHeight = dimensions.height > 0 ? dimensions.height : maxHeight
             let docFrame = Display.fitToView(width: docWidth, height: docHeight, destWidth: maxWidth, destHeight: maxHeight - paddingtop)
             
-            ZStack(alignment: .topLeading) {
-                ZStack {
-                    LayeredCanvas()
-                        .gesture(MagnificationGesture()
-                                    .onChanged { val in
-                            _ = val / self.lastScale
+            if model.showDocument {
+                ZStack(alignment: .topLeading) {
+                    ZStack {
+                        LayeredCanvas()
+                            .gesture(MagnificationGesture()
+                                        .onChanged { val in
+                                _ = val / self.lastScale
 
-                            adjustScale(val: val)
-                            
-                        }.onEnded{ val in
-                            self.lastScale = 1.0
-                        }
-                                    .simultaneously(with: shouldDrag ? DragGesture()
-                                            .onChanged { val in
-                            self.translation = val.translation
-                            
-                            if self.scale > 1.0 {
-                                self.offset.width += self.translation.width
-                                self.offset.height += self.translation.height
-                                self.translation = .zero
+                                adjustScale(val: val)
+                                
+                            }.onEnded{ val in
+                                self.lastScale = 1.0
                             }
-                            
-                        }.onEnded{ val in
-                            self.translation = .zero
-                            
-                        } : nil)
-                        )
-                        .frame(width: docFrame.size.width, height: docFrame.size.height, alignment: .leading)
-                        .scaleEffect(scale)
-                        .offset(x: docFrame.origin.x + self.offset.width, y: docFrame.origin.y + self.offset.height + paddingRight)
-                    .environmentObject(model)
-                }
-                .onReceive(model.$imageData) { value in
-                    let image = UIImage(data: value)
-                    
-                    withAnimation {
-                        dimensions = image?.size ?? dimensions
+                                        .simultaneously(with: shouldDrag ? DragGesture()
+                                                .onChanged { val in
+                                self.translation = val.translation
+                                
+                                if self.scale > 1.0 {
+                                    self.offset.width += self.translation.width
+                                    self.offset.height += self.translation.height
+                                    self.translation = .zero
+                                }
+                                
+                            }.onEnded{ val in
+                                self.translation = .zero
+                                
+                            } : nil)
+                            )
+                            .frame(width: docFrame.size.width, height: docFrame.size.height, alignment: .leading)
+                            .scaleEffect(scale)
+                            .offset(x: docFrame.origin.x + self.offset.width, y: docFrame.origin.y + self.offset.height + paddingRight)
+                        .environmentObject(model)
                     }
-                    
-                    print("imageUpdated", dimensions)
-                    
-                }
-                .offset(x: 0, y: paddingtop)
-                
-                /// Toolbar
-                HStack {
-                    Spacer()
-                  
-                    if canDrag == true {
-                        Button(action: {
-                            shouldDrag.toggle()
-                        } ) {
-                            Image(systemName: shouldDrag ? "hand.raised.fill" : "hand.raised.slash")
-                                .font(.system(size: 26))
-                                .accessibilityLabel("Drag")
+                    .onReceive(model.$imageData) { value in
+                        let image = UIImage(data: value)
+                        
+                        withAnimation {
+                            dimensions = image?.size ?? dimensions
                         }
+                        
+                        print("imageUpdated", dimensions)
                     }
+                    .offset(x: 0, y: paddingtop)
                     
-                    Button(action: {
-                        model.showToolPicker()
-                        shouldDrag = false
-                    } ) {
-                        Image(systemName: "paintbrush.pointed.fill")
-                            .font(.system(size: 26))
-                            .accessibilityLabel("Brush")
-                    }.padding(.leading, toolbarBtnPadding)
-                    
-                    Button(action: {
-                        self.showLayerList.toggle()
-                    } ) {
-                        Image(systemName: "square.fill.on.square.fill")
-                            .font(.system(size: 26))
-                            .accessibilityLabel("Clear")
-                    }.padding(.leading, toolbarBtnPadding)
-                    
-                }
-                .padding()
-                .background(Color.blue)
-                .foregroundColor(Color.white)
-                
-                if showLayerList {
-                    let listWidth = maxWidth * 2 / 6
-                    let offsetX = maxWidth - (listWidth + paddingRight)
-                    
-                    ListLayerView(document: $model.document, documentDidUpdate: $model.canvasUpdated, selected: $model.selected)
+                    /// Toolbar
+                    HStack {
+                        Button (action: {
+                            
+                        }) {
+                            Text("Gallery")
+                                .font(.system(size: 26))
+                                .fontWeight(.bold)
+                                .foregroundColor(Color.white)
+                        }
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            model.corruptedDocument()
+                        } ) {
+                            Image(systemName: "pip.remove")
+                                .font(.system(size: 26))
+                                .accessibilityLabel("corrupted")
+                        }.padding(.leading, toolbarBtnPadding)
+                        
+                        Button(action: {
+                            model.saveCurrentDocument()
+                        } ) {
+                            Image(systemName: "square.and.arrow.down")
+                                .font(.system(size: 26))
+                                .accessibilityLabel("Save")
+                        }.padding(.leading, toolbarBtnPadding)
+                      
+                        if canDrag == true {
+                            Button(action: {
+                                shouldDrag.toggle()
+                            } ) {
+                                Image(systemName: shouldDrag ? "hand.raised.fill" : "hand.raised.slash")
+                                    .font(.system(size: 26))
+                                    .accessibilityLabel("Drag")
+                                    .padding([.leading], toolbarBtnPadding)
+                            }
+                        }
+                        
+                        Button(action: {
+                            model.showToolPicker()
+                            shouldDrag = false
+                        } ) {
+                            Image(systemName: "paintbrush.pointed.fill")
+                                .font(.system(size: 26))
+                                .accessibilityLabel("Brush")
+                        }.padding(.leading, toolbarBtnPadding)
+                        
+                        Button(action: {
+                            self.showLayerList.toggle()
+                        } ) {
+                            Image(systemName: "square.fill.on.square.fill")
+                                .font(.system(size: 26))
+                                .accessibilityLabel("Clear")
+                        }.padding(.leading, toolbarBtnPadding)
+                        
+                    }
+                    .padding(20)
                     .background(Color.blue)
-                    .cornerRadius(10)
-                    .overlay(RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.blue, lineWidth: 0.5))
-                    .environmentObject(model)
-                    .transition(.offset())
-                    .frame(maxWidth: listWidth, maxHeight: maxHeight * 3 / 5)
-                    .offset(x: offsetX, y: paddingtop + paddingRight)
+                    .foregroundColor(Color.white)
+                    
+                    if showLayerList {
+                        let listWidth = maxWidth * 2 / 6
+                        let offsetX = maxWidth - (listWidth + paddingRight)
+                        
+                        ListLayerView(document: $model.document, documentDidUpdate: $model.canvasUpdated, selected: $model.selected)
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                        .overlay(RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.blue, lineWidth: 0.5))
+                        .environmentObject(model)
+                        .transition(.offset())
+                        .frame(maxWidth: listWidth, maxHeight: maxHeight * 3 / 5)
+                        .offset(x: offsetX, y: paddingtop + paddingRight + 10)
+                    }
+                }
+                // .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.white)
+                .foregroundColor(Color.white)
+                .edgesIgnoringSafeArea(.all)
+                .onAppear {
+                    print("It appeared", self.m_title)
+                    model.setCurrentImage(title: self.m_title)
                 }
             }
         }

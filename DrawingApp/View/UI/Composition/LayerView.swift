@@ -13,7 +13,6 @@ struct LayerView: View {
     
     var body: some View {
         HStack {
-            // LayerPreview(layer: $layer)
             
             layer.previewImage()
                 .resizable()

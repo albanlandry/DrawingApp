@@ -26,7 +26,7 @@ struct PaintingCanvas: UIViewRepresentable {
         // canvas.maximumZoomScale = 5.0
         // canvas.minimumZoomScale = 0.25
         print("canvasView")
-        initBgImage()
+        // initBgImage()
         // if isToolPickerVisible {
         // showToolPicker()
         // }
@@ -34,7 +34,7 @@ struct PaintingCanvas: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: UIViewType, context: Context) {
-        initBgImage()
+        // initBgImage()
         /*
         if let image = UIImage(data: imageData) {
             let imageView = UIImageView(image: image)

@@ -11,17 +11,22 @@ struct ContentView: View {
     @EnvironmentObject var modelData: ModelData
     
     var body: some View {
-        /*
         if(modelData.isLoggedIn) {
-            UserHomeView()
+            ImagePreview(data: $modelData.imageRepos)
                 .animation(.default)
+                .environmentObject(modelData)
+                .onAppear(perform: {
+                    // modelData.initNaverSDK()
+                    // modelData.downloadData()
+                    modelData.listOriginals(fromCurrentUser: true)
+                })
         }else {
             SignIn()
                 .environmentObject(modelData)
-        }*/
+        }
         // LayeredCanvas()
-        CompositionDocument(shouldIUpdate: $modelData.canvasUpdated)
-            .environmentObject(modelData)
+        // CompositionDocument(shouldIUpdate: $modelData.canvasUpdated)
+        // ImagePreview(data: $modelData.imageRepos).environmentObject(modelData)
         // UserHomeView()
         // DrawingBitmapCanvas()
     }
