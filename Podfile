@@ -12,10 +12,10 @@ target 'DrawingApp' do
   pod 'naveridlogin-sdk-ios'
 
   # AWS
-  pod 'AWSAPIGateway'
+  # pod 'AWSAPIGateway'
   pod 'AWSS3'
-  pod 'AWSMobileClient'
-  pod 'AWSPinpoint'
+  # pod 'AWSMobileClient'
+  # pod 'AWSPinpoint'
   # pod 'Amplify'
   # pod 'AmplifyPlugins/AWSS3StoragePlugin'
   # pod 'AmplifyPlugins/AWSCognitoAuthPlugin'

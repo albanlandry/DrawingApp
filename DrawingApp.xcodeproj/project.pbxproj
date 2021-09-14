@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4C29DE7C00E1585DA685B1FA /* Pods_DrawingAppTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E6546AC8A1C8FA39D88780EF /* Pods_DrawingAppTests.framework */; };
 		6840FB352696D5DD00A317C3 /* DrawingAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6840FB342696D5DD00A317C3 /* DrawingAppApp.swift */; };
 		6840FB372696D5DD00A317C3 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6840FB362696D5DD00A317C3 /* ContentView.swift */; };
 		6840FB3E2696D5E000A317C3 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6840FB3D2696D5E000A317C3 /* Persistence.swift */; };
@@ -36,6 +37,7 @@
 		68CF0E1A26A00BD400E36361 /* DocumentPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68CF0E1926A00BD400E36361 /* DocumentPreview.swift */; };
 		68E16BCD26C35D7D0085732F /* ModelData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68E16BCC26C35D7D0085732F /* ModelData.swift */; };
 		D529B12CE6DDB052FE2B835D /* Pods_DrawingApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B3ED7228A4A85222E5BD2514 /* Pods_DrawingApp.framework */; };
+		D7FF9C5F8127E052B85EDA0B /* Pods_DrawingApp_DrawingAppUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9373655E325AF4F44A93AD5E /* Pods_DrawingApp_DrawingAppUITests.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -92,7 +94,9 @@
 		68CF0E1726A00B8E00E36361 /* UserHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserHomeView.swift; sourceTree = "<group>"; };
 		68CF0E1926A00BD400E36361 /* DocumentPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPreview.swift; sourceTree = "<group>"; };
 		68E16BCC26C35D7D0085732F /* ModelData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelData.swift; sourceTree = "<group>"; };
+		9373655E325AF4F44A93AD5E /* Pods_DrawingApp_DrawingAppUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DrawingApp_DrawingAppUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B3ED7228A4A85222E5BD2514 /* Pods_DrawingApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DrawingApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E6546AC8A1C8FA39D88780EF /* Pods_DrawingAppTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DrawingAppTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E72333D46677B0125CE0F50E /* Pods-DrawingApp-DrawingAppUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DrawingApp-DrawingAppUITests.release.xcconfig"; path = "Target Support Files/Pods-DrawingApp-DrawingAppUITests/Pods-DrawingApp-DrawingAppUITests.release.xcconfig"; sourceTree = "<group>"; };
 		E7DF835A5504EE55BB6F2A93 /* Pods-DrawingApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DrawingApp.debug.xcconfig"; path = "Target Support Files/Pods-DrawingApp/Pods-DrawingApp.debug.xcconfig"; sourceTree = "<group>"; };
 		F43F3DDA8451879D68AC054A /* amplifyconfiguration.json */ = {isa = PBXFileReference; explicitFileType = text.json; path = amplifyconfiguration.json; sourceTree = "<group>"; };
@@ -112,6 +116,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C29DE7C00E1585DA685B1FA /* Pods_DrawingAppTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -119,6 +124,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D7FF9C5F8127E052B85EDA0B /* Pods_DrawingApp_DrawingAppUITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -142,6 +148,8 @@
 			isa = PBXGroup;
 			children = (
 				B3ED7228A4A85222E5BD2514 /* Pods_DrawingApp.framework */,
+				9373655E325AF4F44A93AD5E /* Pods_DrawingApp_DrawingAppUITests.framework */,
+				E6546AC8A1C8FA39D88780EF /* Pods_DrawingAppTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
