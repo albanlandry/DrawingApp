@@ -57,9 +57,7 @@ class RangedArray<T> {
         return self.next(from: max(0, current - count), to: max(0, current))
     }
 
-    func result( res: ([T]) -> Void) -> RangedArray<T> {
+    func result( res: ([T]) -> Void) {
         res(Array(data[start..<end]))
-        
-        return self
     }
 }

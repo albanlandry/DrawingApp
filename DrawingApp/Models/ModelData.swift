@@ -15,7 +15,16 @@ import AWSCore
 import AWSS3
 
 class ModelData: NSObject, ObservableObject {
-    @Environment(\.undoManager) private var undoManager
+    @Published var isLoggedIn = false
+    @Published var document: Composition = Composition()
+    @Published var compositions: [Composition] = []
+    @Published var showDocument: Bool = true
+    @Published var allImagesLoaded: Bool = true // batch related value
+
+    // Editing related variables
+    @Published var showImagePicker = false
+    @Published var imageData: Data = Data(count: .zero)
+    @Published var currentImageIndex = 0
     
     // User data
     private var username: String = ""
@@ -39,26 +48,20 @@ class ModelData: NSObject, ObservableObject {
         }
     }
     
-    @Published var isLoggedIn = false
-    @Published var compositions: [Composition] = []
-    @Published var showDocument: Bool = true
-    @Published var currentComposition = 0 {
+    private var currentComposition = 0 {
         didSet {
-            document = currentDocument()
+            document = currentDocument
             // selectedLayer = currentLayer()
             fireChanges()
         }
     }
     
+    private var currentDocument:Composition {
+        return compositions[currentComposition]
+    }
+    
     private var listKeys = RangedArray<String?>(data: [])
-    @Published var allImagesLoaded: Bool = true // batch related value
 
-    @Published var document: Composition = Composition()
-
-    // Editing related variables
-    @Published var showImagePicker = false
-    @Published var imageData: Data = Data(count: 0)
-    @Published var currentImageIndex = 0
     
     ///
     /// Store the indexes of the images already in used in documents
@@ -80,7 +83,7 @@ class ModelData: NSObject, ObservableObject {
     
     ///
     func setCurrentImage (title: String) {
-        currentImageIndex = imageRepos.firstIndex{
+        currentImageIndex = imageRepos.firstIndex {
             $0.key == title
         } ?? 0
         
@@ -134,12 +137,9 @@ class ModelData: NSObject, ObservableObject {
     // UI consistency
     @Published var canvasUpdated = false
 
-    // Naver Login object
-    let naverInstance = NaverThirdPartyLoginConnection.getSharedInstance()
-
     override init() {
         super.init()
-
+        
         // compositions.append(document)
 
         // self.selectedLayer = addNewLayer(name: "Background")
@@ -149,19 +149,12 @@ class ModelData: NSObject, ObservableObject {
         toolPicker.addObserver(canvas)
         canvas.becomeFirstResponder()
          */
-
-        // initBgCanvas()
     }
 
     func fireChanges() {
         // showToolPicker()
         self.canvasUpdated.toggle()
         print("firechanges")
-    }
-
-    func initBgCanvas() {
-        canvas = PKCanvasView()
-        canvas.delegate = self
     }
 }
 
@@ -175,6 +168,7 @@ extension ModelData {
         self.isLoggedIn = false
     }
     
+    /*
     // login using kakao
     func kakaoLogin() {
         // If kakao is installed, we login with kakao using the existing application
@@ -218,6 +212,7 @@ extension ModelData {
     // Initialze naver login
     func initNaverSDK() {
         // Initialize naver SDK
+        let naverInstance = NaverThirdPartyLoginConnection.getSharedInstance()
 
         // Login with naver application
         naverInstance?.isNaverAppOauthEnable = true
@@ -241,10 +236,12 @@ extension ModelData {
 
     // Launch the login process
     func naverLogin() {
+        let naverInstance = NaverThirdPartyLoginConnection.getSharedInstance()
         // naverInstance?.delegate = nil
         naverInstance?.delegate = self
         naverInstance?.requestThirdPartyLogin()
     }
+    */
 }
 
 ///
@@ -272,13 +269,13 @@ extension ModelData {
         
         toolPicker.addObserver(layer.canvas)
         /*
-        for l in currentDocument().DLayers {
+        for l in currentDocument.DLayers {
             l.canvas.delegate = nil
         }
         */
         
         
-        currentDocument().DLayers.append(layer)
+        currentDocument.DLayers.append(layer)
         self.fireChanges()
         
         return layer
@@ -314,9 +311,6 @@ extension ModelData {
     ///
     ///
     ///
-    func currentDocument() -> Composition {
-        return compositions[currentComposition]
-    }
     
     ///
     ///
@@ -363,17 +357,9 @@ extension ModelData {
     ///
     func selectLayer(_ pos: Int) {
         selected = pos
-        //print("Current layer = \(pos)")
-        // showToolPicker()
-        // fireChanges()
     }
 
     func showToolPicker() {
-        /*
-        toolPicker.setVisible(true, forFirstResponder: canvas)
-        canvas.becomeFirstResponder()
-        */
-        
         toolPicker.setVisible(true, forFirstResponder: selectedLayer.canvas)
         selectedLayer.canvas.becomeFirstResponder()
     }
@@ -392,6 +378,8 @@ extension ModelData {
     }
  
     // File functionalities
+    
+    /*
     func save () {
         // Generating image
         UIGraphicsBeginImageContextWithOptions(canvas.bounds.size, false, 1)
@@ -441,12 +429,13 @@ extension ModelData {
             }
         }        
     }
+    */
     
     ///
     /// Classifies the document as corrupted
     ///
     func corruptedDocument() {
-        let doc = self.currentDocument()
+        let doc = self.currentDocument
         
         guard let data = doc.DLayers[0].flatten()?.pngData() else {return}
         
@@ -460,7 +449,7 @@ extension ModelData {
     ///
     ///
     func saveCurrentDocument() {
-        let doc = self.currentDocument()
+        let doc = self.currentDocument
         
         guard let data = doc.DLayers[0].flatten()?.pngData() else {return}
         
@@ -540,7 +529,7 @@ extension ModelData {
     ///
     ///
     ///
-    func upload(key: String = "", data: Data = Data(), isCorrupted:Bool =  false, completed: @escaping () -> Void) {
+    func upload(key: String = "", data: Data, isCorrupted:Bool =  false, completed: @escaping () -> Void) {
         
         let expression = AWSS3TransferUtilityUploadExpression()
         expression.progressBlock = { (task, progress) in
@@ -578,7 +567,6 @@ extension ModelData {
                 }
             
                 if let _ = task.result {
-                    print("Do something with upload task")
                     completed()
                 }
             
@@ -607,8 +595,6 @@ extension ModelData {
                 }
                 
                 if out != nil {
-                    // print("Result", out!)
-                    
                     guard let contents = out?.contents else {return}
                     
                     if contents.count > 0 && self.password == "\(self.username)12345" {
@@ -616,22 +602,6 @@ extension ModelData {
                             self.isLoggedIn = true
                         }
                     }
-                    
-                    /*
-                    let originals = contents[1..<contents.count].map {
-                        $0.key
-                    }.filter{
-                        $0?.contains("original") ?? false
-                    }
-                    
-                    originals.forEach { key in
-                        self.downloadData(key: key!)
-                    }
-                    
-                    self.listKeys = RangedArray(data: originals)
-                    */
-
-                    print("Result list: ", contents)
                 }
             }
         } catch {
@@ -722,24 +692,6 @@ extension ModelData {
     /// List 
     ///
     func listOriginals(fromCurrentUser: Bool = false) {
-        /*
-        let ar = RangedArray<Int>(data: [Int](0...29))
-        ar.next()
-            .next()
-            .result { res in
-                _ = res.map {
-                    print("RES => ", $0)
-                }
-            }
-            .prev(5)
-            .prev()
-            .prev()
-            .result { res in
-                _ = res.map {
-                    print("RES => ", $0)
-                }
-            }
-        */
         /// Listing files
         if listKeys.isEmpty {
             let s3 = AWSS3.default()
@@ -772,12 +724,6 @@ extension ModelData {
                             
                             self.fetchDataFromCurrentList()
                         }
-                        /*
-                        originals.forEach { key in
-                            self.downloadData(key: key!)
-                        }
-                        */
-                        print("Result list: ", originals)
                     }
                 }
             } catch {

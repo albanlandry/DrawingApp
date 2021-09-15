@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import KakaoSDKCommon
+// import KakaoSDKCommon
 import KakaoSDKAuth
 import NaverThirdPartyLogin
 import AWSCore
@@ -17,28 +17,31 @@ import AWSS3
 struct DrawingAppApp: App {
     // @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
-    let persistenceController = PersistenceController.shared
+    // let persistenceController = PersistenceController.shared
     @StateObject var modelData = ModelData()
     // Naver login instance
     // let naverInstance = NaverThirdPartyLoginConnection.getSharedInstance()
     
     init() {
         // Initialize Kakao SDK.
-        KakaoSDKCommon.initSDK(appKey: "468d7e5a837f342c18b3f2a6b63df60d")
+        // KakaoSDKCommon.initSDK(appKey: "468d7e5a837f342c18b3f2a6b63df60d")
         initializeAWSS3()
     }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
+            /*
                 .onAppear(perform: {
                     modelData.initNaverSDK()
                     // modelData.deleteObject()
                     // modelData.downloadData()
                     // modelData.listOriginals()
                 })
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+            */
+                // .environment(\.managedObjectContext, persistenceController.container.viewContext)
                 .environmentObject(modelData)
+            /*
                 .onOpenURL(perform: {url in
                     
                     if AuthApi.isKakaoTalkLoginUrl(url) {
@@ -50,6 +53,8 @@ struct DrawingAppApp: App {
                     }
                     // NaverThirdPartyLoginConnection.isNaverThirdPartyLoginAppschemeURL(naverInstance)
                 })
+             
+             */
         }
     }
 }
@@ -58,6 +63,7 @@ struct DrawingAppApp: App {
 /// App delegates
 ///
 
+/*
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         let credentialsProvider = MyCredentialsProvider()
@@ -84,6 +90,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         return true
     }
 }
+ */
 
 func initializeAWSS3() {
     let credentialsProvider = MyCredentialsProvider()
