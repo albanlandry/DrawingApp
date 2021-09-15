@@ -11,7 +11,7 @@ import SwiftUI
 
 class Composition: Identifiable {
     var id = UUID()
-    var DLayers: [DrawingLayer] = [DrawingLayer]()
+    var DLayers: [DrawingLayer] = []
     var currentLayer: Int = 0
     var size: CGSize
     

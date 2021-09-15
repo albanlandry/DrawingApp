@@ -12,6 +12,14 @@ class RangedArray<T> {
     var limit: Int =  10
     var data: [T]
     
+    final var hasReachedEnd:Bool {
+        self.end == data.count
+    }
+    
+    final var isEmpty:Bool {
+        self.data.count <= 0
+    }
+    
     private var start: Int = 0
     private var end: Int = 0
     
@@ -35,8 +43,6 @@ class RangedArray<T> {
         let _max = min(max(from, to), self.data.count)
         start = _min
         end = _max
-        
-        print("Start, end: ", start, end)
         
         return self
     }

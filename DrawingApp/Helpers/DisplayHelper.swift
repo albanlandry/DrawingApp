@@ -20,14 +20,14 @@ public final class Display {
     ///     - destWidth:
 ///         - destHeight:
     static func fitToView(width: Double, height: Double, destWidth: Double, destHeight: Double, padding: Double = 0) -> CGRect {
-        let destRatio = min(destWidth/width, destHeight/height)
-        let srcRatio = min(width/destWidth, height/destHeight)
-        let ratio = destRatio
+        let ratio = min(destWidth/width, destHeight/height)
+        let x = (destWidth - (width * ratio) ) / 2
+        let y = (destHeight - (height * ratio) ) / 2
         
-        let rect =  CGRect(x: (destWidth - width * ratio) / 2 + padding,
-                      y: (destHeight - height * ratio) / 2 + padding,
-                      width: (width - padding * 2) * ratio,
-                      height: (height - padding * 2) * ratio)
+        let rect =  CGRect(x: x + padding,
+                      y: y + padding,
+                      width: (width - (padding * 2) ) * ratio,
+                      height: (height - (padding * 2) )   * ratio)
         
         return rect
     }

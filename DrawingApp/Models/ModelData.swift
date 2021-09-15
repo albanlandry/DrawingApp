@@ -51,6 +51,7 @@ class ModelData: NSObject, ObservableObject {
     }
     
     private var listKeys = RangedArray<String?>(data: [])
+    @Published var allImagesLoaded: Bool = true // batch related value
 
     @Published var document: Composition = Composition()
 
@@ -168,6 +169,12 @@ class ModelData: NSObject, ObservableObject {
 /// Kakao login related extension
 /// 
 extension ModelData {
+    func logout() {
+        self.username = ""
+        self.password = ""
+        self.isLoggedIn = false
+    }
+    
     // login using kakao
     func kakaoLogin() {
         // If kakao is installed, we login with kakao using the existing application
@@ -678,24 +685,38 @@ extension ModelData {
             try s3.deleteObject(AWSS3DeleteObjectRequest(dictionary:
                 [
                     "bucket": "wedit-autocolor",
-                    "key": key,
-                    //"delimiter": "/"
+                    "key": key
                 ], error: ())) {res, error  in
                 
                 if error == nil {
-                    print("Delete result: ", res)
                     
                     DispatchQueue.main.async {
                         self.updateImageRepository()
                     }
                 }
-                
             }
         } catch {
             print("Error caught", error)
         }
         
     }
+    
+    ///
+    ///
+    ///
+    func fetchDataFromCurrentList(_ count: Int = 25) {
+        
+        if !listKeys.hasReachedEnd {
+            listKeys.next(count).result { res in
+                res.forEach { key in
+                    self.downloadData(key: key!)
+                }
+            }
+        }
+        
+        self.allImagesLoaded = listKeys.hasReachedEnd
+    }
+    
     
     ///
     /// List 
@@ -719,44 +740,51 @@ extension ModelData {
                 }
             }
         */
-
         /// Listing files
-        let s3 = AWSS3.default()
-        
-        do {
-            try s3.listObjectsV2(AWSS3ListObjectsV2Request(dictionary: [
-                "bucket": "wedit-autocolor",
-                "prefix": fromCurrentUser ? self.currentUserOriginalFolderKey: "original/",
-                "delimiter": "/"
-            ], error: ())) {out, error in
-                
-                if error != nil {
-                    print("An error occurred listing the buckets content", error!)
-                    return
-                }
-                
-                if out != nil {
-                    // print("Result", out!)
+        if listKeys.isEmpty {
+            let s3 = AWSS3.default()
+            
+            do {
+                try s3.listObjectsV2(AWSS3ListObjectsV2Request(dictionary: [
+                    "bucket": "wedit-autocolor",
+                    "prefix": fromCurrentUser ? self.currentUserOriginalFolderKey: "original/",
+                    "delimiter": "/"
+                ], error: ())) {out, error in
                     
-                    guard let contents = out?.contents else {return}
-                    
-                    let originals = contents[1..<contents.count].map {
-                        $0.key
-                    }.filter{
-                        $0?.contains("original") ?? false
+                    if error != nil {
+                        print("An error occurred listing the buckets content", error!)
+                        return
                     }
                     
-                    originals.forEach { key in
-                        self.downloadData(key: key!)
+                    if out != nil {
+                        // print("Result", out!)
+                        
+                        guard let contents = out?.contents else {return}
+                                            
+                        let originals = contents[1..<contents.count].map {
+                            $0.key
+                        }.filter{
+                            $0?.contains("original") ?? false
+                        }
+                        
+                        DispatchQueue.main.async {
+                            self.listKeys = RangedArray(data: originals)
+                            
+                            self.fetchDataFromCurrentList()
+                        }
+                        /*
+                        originals.forEach { key in
+                            self.downloadData(key: key!)
+                        }
+                        */
+                        print("Result list: ", originals)
                     }
-                    
-                    self.listKeys = RangedArray(data: originals)
-
-                    print("Result list: ", originals)
                 }
+            } catch {
+                print("Error caught", error)
             }
-        } catch {
-            print("Error caught", error)
+        }else {
+            fetchDataFromCurrentList()
         }
     }
 }

@@ -16,6 +16,10 @@ struct CompositionDocument: View {
     @State private var translation: CGSize = .zero
     @State private var shouldDrag = false
     @State private var canDrag = false
+    @State private var showSaveDialog = false
+    @State private var showDiscardDialog = false
+    @State private var showLogoutDialog = false
+    @State private var goBack = false
     
     @State var dimensions: CGSize = CGSize(width: 900, height: 600)
     
@@ -74,39 +78,79 @@ struct CompositionDocument: View {
                         withAnimation {
                             dimensions = image?.size ?? dimensions
                         }
-                        
-                        print("imageUpdated", dimensions)
+        
                     }
                     .offset(x: 0, y: paddingtop)
                     
                     /// Toolbar
                     HStack {
+                        
+                        NavigationLink(destination: ContentView()
+                                        .environmentObject(model), isActive: !$model.isLoggedIn){
+                            EmptyView()
+                        }
+                        
                         Button (action: {
-                            
+                            showLogoutDialog = true
                         }) {
-                            Text("Gallery")
-                                .font(.system(size: 26))
-                                .fontWeight(.bold)
-                                .foregroundColor(Color.white)
+                            HStack {
+                                Image(systemName: "power")
+                                    .font(.system(size: 26))
+                                    .accessibilityLabel("logout")
+                                Text("logout")
+                                    .font(.system(size: 18))
+                                    .foregroundColor(Color.white)
+                            }
+                        }.alert(isPresented: $showLogoutDialog){
+                            Alert(
+                                title: Text("로그아웃겠습니까?"),
+                                message: Text(""),
+                                primaryButton: .default (Text("확인")) {
+                                model.logout()
+                            },
+                                secondaryButton: .cancel(Text("취소"))
+                            )
                         }
                         
                         Spacer()
                         
                         Button(action: {
-                            model.corruptedDocument()
+                            showDiscardDialog = true
                         } ) {
                             Image(systemName: "pip.remove")
                                 .font(.system(size: 26))
                                 .accessibilityLabel("corrupted")
                         }.padding(.leading, toolbarBtnPadding)
+                            .alert(isPresented: $showDiscardDialog){
+                                Alert(
+                                    title: Text("이미지를 버리겠습니까?"),
+                                    message: Text(""),
+                                    primaryButton: .default (Text("확인")) {
+                                    model.corruptedDocument()
+                                },
+                                    secondaryButton: .cancel(Text("취소"))
+                                    
+                                )
+                            }
                         
                         Button(action: {
-                            model.saveCurrentDocument()
+                            self.showSaveDialog = true
                         } ) {
                             Image(systemName: "square.and.arrow.down")
                                 .font(.system(size: 26))
                                 .accessibilityLabel("Save")
                         }.padding(.leading, toolbarBtnPadding)
+                            .alert(isPresented: $showSaveDialog){
+                                Alert(
+                                    title: Text("저장하시겠습니까?"),
+                                    message: Text(""),
+                                    primaryButton: .default (Text("확인")) {
+                                    model.saveCurrentDocument()
+                                },
+                                    secondaryButton: .cancel(Text("취소"))
+                                    
+                                )
+                            }
                       
                         if canDrag == true {
                             Button(action: {

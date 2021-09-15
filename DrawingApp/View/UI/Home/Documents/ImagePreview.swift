@@ -12,6 +12,11 @@ struct ImagePreview: View {
     @Binding var data: [OnlineImage]
     @EnvironmentObject var modelData: ModelData
     
+    var foreverAnimation: Animation {
+        Animation.linear(duration: 2.0)
+            .repeatForever(autoreverses: false)
+    }
+    
     var body: some View {
         NavigationView {
             List {
@@ -29,6 +34,19 @@ struct ImagePreview: View {
                                 .scaledToFit()
                             Text(img.key)
                         }
+                    }
+                }
+                
+                if !modelData.allImagesLoaded {
+                    HStack(alignment: .center) {
+                        Spacer()
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .rotationEffect(Angle(degrees: 360))
+                            .animation(foreverAnimation)
+                        Spacer()
+                    }.onAppear {
+                        print("I already appeared")
+                        modelData.fetchDataFromCurrentList()
                     }
                 }
             }
