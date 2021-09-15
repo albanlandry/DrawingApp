@@ -20,5 +20,4 @@ struct OnlineImage: Decodable, Identifiable {
     init(key: String) {
         self.init(key: key, data: Data(count: 0))
     }
-    
 }
