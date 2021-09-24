@@ -18,7 +18,7 @@ public final class Display {
     ///     - width:
     ///     - height:
     ///     - destWidth:
-///         - destHeight:
+    ///     - destHeight:
     static func fitToView(width: Double, height: Double, destWidth: Double, destHeight: Double, padding: Double = 0) -> CGRect {
         let ratio = min(destWidth/width, destHeight/height)
         let x = (destWidth - (width * ratio) ) / 2

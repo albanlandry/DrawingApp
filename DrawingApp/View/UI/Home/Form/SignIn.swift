@@ -115,7 +115,6 @@ struct SignIn: View {
                 .frame(minWidth: geometry.size.width)
             // }.navigationViewStyle(.stack)
         }
-            
     }
 }
 
